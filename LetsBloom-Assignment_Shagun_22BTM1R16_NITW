@@ -1,0 +1,97 @@
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+public class UrlShorteningTests {
+
+    private static WebDriver driver;
+
+    @BeforeClass
+    public static void setUp() {
+        System.setProperty("webdriver.chrome.driver", "path/to/chromedriver");
+        driver = new ChromeDriver();
+        driver.get("https://1pt.co");
+    }
+
+    @Test
+    public void testShortenURL() {
+        shortenUrl("https://www.example.com");
+        verifyShortUrlGenerated();
+    }
+
+    @Test
+    public void testCustomShortURL() {
+        shortenUrlWithCustom("https://www.example.com", "custom");
+        verifyCustomShortUrlGenerated();
+    }
+
+    @Test
+    public void testInvalidURL() {
+        shortenUrl("invalidurl");
+        verifyErrorMessageDisplayed();
+    }
+
+    @Test
+    public void testShortenSameURLTwice() {
+        shortenUrl("https://www.example.com");
+        shortenUrlAgain();
+        verifyErrorMessageDisplayed();
+    }
+
+    @Test
+    public void testMaxURLLengthExceeded() {
+        shortenUrl("a".repeat(2049));
+        verifyErrorMessageDisplayed();
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        driver.quit();
+    }
+
+    private void shortenUrl(String url) {
+        WebElement urlInput = driver.findElement(By.id("long-url"));
+        urlInput.sendKeys(url);
+
+        WebElement shortenButton = driver.findElement(By.id("shorten-button"));
+        shortenButton.click();
+    }
+
+    private void shortenUrlWithCustom(String url, String custom) {
+        WebElement urlInput = driver.findElement(By.id("long-url"));
+        WebElement customUrlInput = driver.findElement(By.id("custom-url"));
+
+        urlInput.sendKeys(url);
+        customUrlInput.sendKeys(custom);
+
+        WebElement shortenButton = driver.findElement(By.id("shorten-button"));
+        shortenButton.click();
+    }
+
+    private void shortenUrlAgain() {
+        WebElement shortenButton = driver.findElement(By.id("shorten-button"));
+        shortenButton.click();
+    }
+
+    private void verifyShortUrlGenerated() {
+        WebElement shortURL = driver.findElement(By.id("short-url"));
+        assertNotNull(shortURL.getText());
+    }
+
+    private void verifyCustomShortUrlGenerated() {
+        WebElement shortURL = driver.findElement(By.id("short-url"));
+        assertEquals("https://1pt.co/custom", shortURL.getText());
+    }
+
+    private void verifyErrorMessageDisplayed() {
+        WebElement errorMessage = driver.findElement(By.id("error-message"));
+        assertNotNull(errorMessage.getText());
+    }
+}
