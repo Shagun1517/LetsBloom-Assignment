@@ -1,97 +1,74 @@
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
+1. Functionality Testing:
+1.1 Positive Test Cases:
+Test Case 1: Shorten URL
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+1. Navigate to the URL shortening service.
+2. Enter a valid long URL.
+3. Click on the "Shorten" button.
+Expected Outcome: A short URL is generated and redirects to the original URL.
+Test Case 2: Custom Short URL
+1. Navigate to the URL shortening service.
+2. Enter a valid long URL and a custom short URL.
+3. Click on the "Shorten" button.
+Expected Outcome: The custom short URL is generated and redirects to the original URL.
+1.2 Negative Test Cases:
+Test Case 3: Invalid URL
+1. Navigate to the URL shortening service.
+2. Enter an invalid or malformed URL.
+3. Click on the "Shorten" button.
+Expected Outcome: An error message is displayed, indicating an invalid URL.
+Test Case 4: Shorten Same URL Twice
 
-public class UrlShorteningTests {
+Shorten a valid URL.
+Attempt to shorten the same URL again.
+Expected Outcome: An error message is displayed, indicating the URL is already shortened.
+2. User Experience Testing:
+2.1 Positive Test Cases:
+Test Case 5: Responsive Design
 
-    private static WebDriver driver;
+Access the URL shortening service from different devices (desktop, tablet, mobile).
+Expected Outcome: The service is responsive and provides a good user experience across devices.
+Test Case 6: Short URL Accessibility
 
-    @BeforeClass
-    public static void setUp() {
-        System.setProperty("webdriver.chrome.driver", "path/to/chromedriver");
-        driver = new ChromeDriver();
-        driver.get("https://1pt.co");
-    }
+Shorten a URL.
+Access the short URL from various browsers (Chrome, Firefox, Safari).
+Expected Outcome: The short URL is accessible and functional across different browsers.
+2.2 Negative Test Cases:
+Test Case 7: Unsupported Browser
+1. Access the URL shortening service from an unsupported browser.
+2. Expected Outcome: Display a message indicating that the browser is not supported.
+Code:
+import pytest
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 
-    @Test
-    public void testShortenURL() {
-        shortenUrl("https://www.example.com");
-        verifyShortUrlGenerated();
-    }
+@pytest.fixture
+def browser():
+    driver = webdriver.Chrome(executable_path='/path/to/chromedriver')
+    yield driver
+    driver.quit()
 
-    @Test
-    public void testCustomShortURL() {
-        shortenUrlWithCustom("https://www.example.com", "custom");
-        verifyCustomShortUrlGenerated();
-    }
+def test_shorten_url(browser):
+    # Test Case 1: Shorten URL
+    browser.get("https://github.com/1pt-co/1pt")
+    url_input = browser.find_element_by_id("long-url")
+    url_input.send_keys("https://www.example.com")
+    url_input.send_keys(Keys.RETURN)
+    
+    short_url = browser.find_element_by_id("short-url").text
+    assert short_url, "Short URL not generated"
+    assert browser.current_url == short_url, "Short URL does not redirect to the original URL"
 
-    @Test
-    public void testInvalidURL() {
-        shortenUrl("invalidurl");
-        verifyErrorMessageDisplayed();
-    }
-
-    @Test
-    public void testShortenSameURLTwice() {
-        shortenUrl("https://www.example.com");
-        shortenUrlAgain();
-        verifyErrorMessageDisplayed();
-    }
-
-    @Test
-    public void testMaxURLLengthExceeded() {
-        shortenUrl("a".repeat(2049));
-        verifyErrorMessageDisplayed();
-    }
-
-    @AfterClass
-    public static void tearDown() {
-        driver.quit();
-    }
-
-    private void shortenUrl(String url) {
-        WebElement urlInput = driver.findElement(By.id("long-url"));
-        urlInput.sendKeys(url);
-
-        WebElement shortenButton = driver.findElement(By.id("shorten-button"));
-        shortenButton.click();
-    }
-
-    private void shortenUrlWithCustom(String url, String custom) {
-        WebElement urlInput = driver.findElement(By.id("long-url"));
-        WebElement customUrlInput = driver.findElement(By.id("custom-url"));
-
-        urlInput.sendKeys(url);
-        customUrlInput.sendKeys(custom);
-
-        WebElement shortenButton = driver.findElement(By.id("shorten-button"));
-        shortenButton.click();
-    }
-
-    private void shortenUrlAgain() {
-        WebElement shortenButton = driver.findElement(By.id("shorten-button"));
-        shortenButton.click();
-    }
-
-    private void verifyShortUrlGenerated() {
-        WebElement shortURL = driver.findElement(By.id("short-url"));
-        assertNotNull(shortURL.getText());
-    }
-
-    private void verifyCustomShortUrlGenerated() {
-        WebElement shortURL = driver.findElement(By.id("short-url"));
-        assertEquals("https://1pt.co/custom", shortURL.getText());
-    }
-
-    private void verifyErrorMessageDisplayed() {
-        WebElement errorMessage = driver.findElement(By.id("error-message"));
-        assertNotNull(errorMessage.getText());
-    }
-}
+def test_custom_short_url(browser):
+    # Test Case 2: Custom Short URL
+    browser.get("https://github.com/1pt-co/1pt")
+    url_input = browser.find_element_by_id("long-url")
+    url_input.send_keys("https://www.example.com")
+    
+    custom_url_input = browser.find_element_by_id("custom-url")
+    custom_url_input.send_keys("custom")
+    
+    url_input.send_keys(Keys.RETURN)
+    
+    short_url = browser.find_element_by_id("short-url").text
+    assert short_url == "https://github.com/1pt-co/1pt/custom", "Custom short URL not generated"
